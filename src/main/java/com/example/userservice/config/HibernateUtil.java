@@ -10,14 +10,42 @@ public class HibernateUtil {
 
     private static SessionFactory buildSessionFactory() {
         try {
-            return new Configuration()
-                    .configure()
-                    .buildSessionFactory();
+            Configuration configuration = new Configuration()
+                    .configure();
+
+            configuration.setProperty(
+                    "hibernate.connection.url",
+                    getRequiredEnv("DB_URL")
+            );
+
+            configuration.setProperty(
+                    "hibernate.connection.username",
+                    getRequiredEnv("DB_USERNAME")
+            );
+
+            configuration.setProperty(
+                    "hibernate.connection.password",
+                    getRequiredEnv("DB_PASSWORD")
+            );
+
+            return configuration.buildSessionFactory();
+
         } catch (Throwable exception) {
-            System.err.println("Failed to create SessionFactory: "
-                    + exception);
+            exception.printStackTrace();
             throw new ExceptionInInitializerError(exception);
         }
+    }
+
+    private static String getRequiredEnv(String name) {
+        String value = System.getenv(name);
+
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException(
+                    "Environment variable " + name + " is not set"
+            );
+        }
+
+        return value;
     }
 
     public static SessionFactory getSessionFactory() {
