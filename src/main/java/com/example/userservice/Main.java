@@ -11,15 +11,15 @@ public class Main {
         try {
             UserDao userDao = new UserDao();
 
-            userDao.update(1L, "Kolya", "kolya@example.com", 35);
+            userDao.delete(1L);
 
             User user = userDao.findById(1L);
 
-            if (user != null) {
-                System.out.println("Updated user:");
-                System.out.println(user);
+            if (user == null) {
+                System.out.println("User successfully deleted");
             } else {
-                System.out.println("User not found");
+                System.out.println("User still exists:");
+                System.out.println(user);
             }
 
         } finally {
