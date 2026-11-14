@@ -51,4 +51,33 @@ public class UserDao {
             ).list();
         }
     }
+
+    public void update(Long id, String name, String email, Integer age) {
+        Transaction transaction = null;
+
+        try (Session session = HibernateUtil
+                .getSessionFactory()
+                .openSession()) {
+
+            transaction = session.beginTransaction();
+
+            User user = session.get(User.class, id);
+
+            if (user != null) {
+                user.setName(name);
+                user.setEmail(email);
+                user.setAge(age);
+            }
+
+            transaction.commit();
+
+        } catch (RuntimeException exception) {
+
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+
+            throw exception;
+        }
+    }
 }

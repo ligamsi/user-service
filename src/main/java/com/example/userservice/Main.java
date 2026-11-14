@@ -11,16 +11,15 @@ public class Main {
         try {
             UserDao userDao = new UserDao();
 
-            List<User> users = userDao.findAll();
+            userDao.update(1L, "Kolya", "kolya@example.com", 35);
 
-            if (users.isEmpty()) {
-                System.out.println("No users found");
+            User user = userDao.findById(1L);
+
+            if (user != null) {
+                System.out.println("Updated user:");
+                System.out.println(user);
             } else {
-                System.out.println("All users:");
-
-                for (User user : users) {
-                    System.out.println(user);
-                }
+                System.out.println("User not found");
             }
 
         } finally {
