@@ -3,10 +3,18 @@ package com.example.userservice.service;
 import com.example.userservice.dao.UserDao;
 import com.example.userservice.entity.User;
 import java.util.List;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
-public class UserService {
+public class UserService implements AutoCloseable {
 
     private final UserDao userDao = new UserDao();
+    private final ValidatorFactory validatorFactory =
+            Validation.buildDefaultValidatorFactory();
+
+    private final Validator validator =
+            validatorFactory.getValidator();
 
     public void createUser(User user) {
         validateUserData(
@@ -37,16 +45,23 @@ public class UserService {
     }
 
     private void validateUserData(String name, String email, Integer age) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Name cannot be empty");
-        }
+        User user = new User(name, email, age);
 
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Email cannot be empty");
-        }
+        var violations = validator.validate(user);
 
-        if (age != null && age < 0) {
-            throw new IllegalArgumentException("Age cannot be negative");
+        if (!violations.isEmpty()) {
+            StringBuilder errors = new StringBuilder();
+
+            for (var violation : violations) {
+                errors.append(violation.getMessage()).append("; ");
+            }
+
+            throw new IllegalArgumentException(errors.toString());
         }
+    }
+
+    @Override
+    public void close() {
+        validatorFactory.close();
     }
 }

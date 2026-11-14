@@ -2,6 +2,9 @@ package com.example.userservice.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Min;
 
 @Entity
 @Table(name = "users")
@@ -11,12 +14,16 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Name cannot be empty")
     @Column(nullable = false)
     private String name;
 
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Invalid email format")
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Min(value = 0, message = "Age cannot be negative")
     private Integer age;
 
     @Column(name = "created_at", nullable = false)
