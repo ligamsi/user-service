@@ -24,7 +24,11 @@ public class UserDao {
         } catch (RuntimeException exception) {
 
             if (transaction != null && transaction.isActive()) {
-                transaction.rollback();
+                try {
+                    transaction.rollback();
+                } catch (RuntimeException rollbackException) {
+                    exception.addSuppressed(rollbackException);
+                }
             }
 
             throw exception;

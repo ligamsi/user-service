@@ -6,6 +6,9 @@ import java.util.List;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import com.example.userservice.exception.DuplicateEmailException;
+import org.hibernate.exception.ConstraintViolationException;
+
 
 public class UserService implements AutoCloseable {
 
@@ -23,7 +26,20 @@ public class UserService implements AutoCloseable {
                 user.getAge()
         );
 
-        userDao.create(user);
+        try {
+            userDao.create(user);
+
+        } catch (RuntimeException exception) {
+
+            if (isDuplicateEmail(exception)) {
+                throw new DuplicateEmailException(
+                        "Email is already in use: " + user.getEmail(),
+                        exception
+                );
+            }
+
+            throw exception;
+        }
     }
 
     public User getUserById(Long id) {
@@ -44,12 +60,25 @@ public class UserService implements AutoCloseable {
     public void updateUser(Long id, String name, String email, Integer age) {
         validateUserData(name, email, age);
 
-        boolean updated = userDao.update(id, name, email, age);
+        try {
+            boolean updated = userDao.update(id, name, email, age);
 
-        if (!updated) {
-            throw new IllegalArgumentException(
-                    "User with ID " + id + " not found"
-            );
+            if (!updated) {
+                throw new IllegalArgumentException(
+                        "User with ID " + id + " not found"
+                );
+            }
+
+        } catch (RuntimeException exception) {
+
+            if (isDuplicateEmail(exception)) {
+                throw new DuplicateEmailException(
+                        "Email is already in use: " + email,
+                        exception
+                );
+            }
+
+            throw exception;
         }
     }
 
@@ -77,6 +106,21 @@ public class UserService implements AutoCloseable {
 
             throw new IllegalArgumentException(errors.toString());
         }
+    }
+
+    private boolean isDuplicateEmail(RuntimeException exception) {
+        Throwable cause = exception;
+
+        while (cause != null) {
+            if (cause instanceof ConstraintViolationException constraintException) {
+                return "23505".equals(
+                        constraintException.getSQLException().getSQLState()
+                );
+            }
+            cause = cause.getCause();
+        }
+
+        return false;
     }
 
     @Override
