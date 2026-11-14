@@ -3,6 +3,7 @@ package com.example.userservice;
 import com.example.userservice.config.HibernateUtil;
 import com.example.userservice.dao.UserDao;
 import com.example.userservice.entity.User;
+import java.util.List;
 
 public class Main {
 
@@ -10,13 +11,16 @@ public class Main {
         try {
             UserDao userDao = new UserDao();
 
-            User user = userDao.findById(1L);
+            List<User> users = userDao.findAll();
 
-            if (user != null) {
-                System.out.println("User found:");
-                System.out.println(user);
+            if (users.isEmpty()) {
+                System.out.println("No users found");
             } else {
-                System.out.println("User not found");
+                System.out.println("All users:");
+
+                for (User user : users) {
+                    System.out.println(user);
+                }
             }
 
         } finally {

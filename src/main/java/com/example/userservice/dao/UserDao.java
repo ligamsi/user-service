@@ -4,6 +4,7 @@ import com.example.userservice.config.HibernateUtil;
 import com.example.userservice.entity.User;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import java.util.List;
 
 public class UserDao {
 
@@ -36,6 +37,18 @@ public class UserDao {
                 .openSession()) {
 
             return session.get(User.class, id);
+        }
+    }
+
+    public List<User> findAll() {
+        try (Session session = HibernateUtil
+                .getSessionFactory()
+                .openSession()) {
+
+            return session.createQuery(
+                    "FROM User",
+                    User.class
+            ).list();
         }
     }
 }
