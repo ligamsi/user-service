@@ -39,18 +39,31 @@ public class UserService implements AutoCloseable {
     }
 
     public User getUserById(Long id) {
-        User user = userDao.findById(id);
+        User user;
+
+        try {
+            user = userDao.findById(id);
+
+        } catch (RuntimeException exception) {
+            throw handleDatabaseException(exception, null);
+        }
 
         if (user == null) {
             throw new IllegalArgumentException(
                     "User with ID " + id + " not found"
             );
         }
+
         return user;
     }
 
     public List<User> getAllUsers() {
-        return userDao.findAll();
+        try {
+            return userDao.findAll();
+
+        } catch (RuntimeException exception) {
+            throw handleDatabaseException(exception, null);
+        }
     }
 
     public void updateUser(Long id, String name, String email, Integer age) {
@@ -73,7 +86,14 @@ public class UserService implements AutoCloseable {
     }
 
     public void deleteUser(Long id) {
-        boolean deleted = userDao.delete(id);
+        boolean deleted;
+
+        try {
+            deleted = userDao.delete(id);
+
+        } catch (RuntimeException exception) {
+            throw handleDatabaseException(exception, null);
+        }
 
         if (!deleted) {
             throw new IllegalArgumentException(
