@@ -52,7 +52,7 @@ public class UserDao {
         }
     }
 
-    public void update(Long id, String name, String email, Integer age) {
+    public boolean update(Long id, String name, String email, Integer age) {
         Transaction transaction = null;
 
         try (Session session = HibernateUtil
@@ -63,13 +63,17 @@ public class UserDao {
 
             User user = session.get(User.class, id);
 
-            if (user != null) {
-                user.setName(name);
-                user.setEmail(email);
-                user.setAge(age);
+            if (user == null) {
+                transaction.commit();
+                return false;
             }
 
+            user.setName(name);
+            user.setEmail(email);
+            user.setAge(age);
+
             transaction.commit();
+            return true;
 
         } catch (RuntimeException exception) {
 
@@ -81,7 +85,7 @@ public class UserDao {
         }
     }
 
-    public void delete(Long id) {
+    public boolean delete(Long id) {
         Transaction transaction = null;
 
         try (Session session = HibernateUtil
@@ -92,11 +96,15 @@ public class UserDao {
 
             User user = session.get(User.class, id);
 
-            if (user != null) {
-                session.remove(user);
+            if (user == null) {
+                transaction.commit();
+                return false;
             }
 
+            session.remove(user);
+
             transaction.commit();
+            return true;
 
         } catch (RuntimeException exception) {
 

@@ -27,7 +27,14 @@ public class UserService implements AutoCloseable {
     }
 
     public User getUserById(Long id) {
-        return userDao.findById(id);
+        User user = userDao.findById(id);
+
+        if (user == null) {
+            throw new IllegalArgumentException(
+                    "User with ID " + id + " not found"
+            );
+        }
+        return user;
     }
 
     public List<User> getAllUsers() {
@@ -37,11 +44,23 @@ public class UserService implements AutoCloseable {
     public void updateUser(Long id, String name, String email, Integer age) {
         validateUserData(name, email, age);
 
-        userDao.update(id, name, email, age);
+        boolean updated = userDao.update(id, name, email, age);
+
+        if (!updated) {
+            throw new IllegalArgumentException(
+                    "User with ID " + id + " not found"
+            );
+        }
     }
 
     public void deleteUser(Long id) {
-        userDao.delete(id);
+        boolean deleted = userDao.delete(id);
+
+        if (!deleted) {
+            throw new IllegalArgumentException(
+                    "User with ID " + id + " not found"
+            );
+        }
     }
 
     private void validateUserData(String name, String email, Integer age) {
