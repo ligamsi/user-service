@@ -29,4 +29,13 @@ public class UserDao {
             throw exception;
         }
     }
+
+    public User findById(Long id) {
+        try (Session session = HibernateUtil
+                .getSessionFactory()
+                .openSession()) {
+
+            return session.get(User.class, id);
+        }
+    }
 }

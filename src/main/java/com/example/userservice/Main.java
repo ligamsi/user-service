@@ -10,16 +10,14 @@ public class Main {
         try {
             UserDao userDao = new UserDao();
 
-            User user = new User(
-                    "Ivan",
-                    "ivan@gmail.com",
-                    25
-            );
+            User user = userDao.findById(1L);
 
-            userDao.create(user);
-
-            System.out.println("User created successfully!");
-            System.out.println(user);
+            if (user != null) {
+                System.out.println("User found:");
+                System.out.println(user);
+            } else {
+                System.out.println("User not found");
+            }
 
         } finally {
             HibernateUtil.shutdown();
