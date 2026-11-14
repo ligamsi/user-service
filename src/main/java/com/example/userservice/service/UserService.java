@@ -8,6 +8,7 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import com.example.userservice.exception.DuplicateEmailException;
 import org.hibernate.exception.ConstraintViolationException;
+import com.example.userservice.exception.DatabaseException;
 
 
 public class UserService implements AutoCloseable {
@@ -30,15 +31,10 @@ public class UserService implements AutoCloseable {
             userDao.create(user);
 
         } catch (RuntimeException exception) {
-
-            if (isDuplicateEmail(exception)) {
-                throw new DuplicateEmailException(
-                        "Email is already in use: " + user.getEmail(),
-                        exception
-                );
-            }
-
-            throw exception;
+            throw handleDatabaseException(
+                    exception,
+                    user.getEmail()
+            );
         }
     }
 
@@ -60,25 +56,19 @@ public class UserService implements AutoCloseable {
     public void updateUser(Long id, String name, String email, Integer age) {
         validateUserData(name, email, age);
 
-        try {
-            boolean updated = userDao.update(id, name, email, age);
+        boolean updated;
 
-            if (!updated) {
-                throw new IllegalArgumentException(
-                        "User with ID " + id + " not found"
-                );
-            }
+        try {
+            updated = userDao.update(id, name, email, age);
 
         } catch (RuntimeException exception) {
+            throw handleDatabaseException(exception, email);
+        }
 
-            if (isDuplicateEmail(exception)) {
-                throw new DuplicateEmailException(
-                        "Email is already in use: " + email,
-                        exception
-                );
-            }
-
-            throw exception;
+        if (!updated) {
+            throw new IllegalArgumentException(
+                    "User with ID " + id + " not found"
+            );
         }
     }
 
@@ -121,6 +111,23 @@ public class UserService implements AutoCloseable {
         }
 
         return false;
+    }
+
+    private RuntimeException handleDatabaseException(
+            RuntimeException exception,
+            String email
+    ) {
+        if (isDuplicateEmail(exception)) {
+            return new DuplicateEmailException(
+                    "Email is already in use: " + email,
+                    exception
+            );
+        }
+
+        return new DatabaseException(
+                "Database operation failed",
+                exception
+        );
     }
 
     @Override
