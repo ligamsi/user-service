@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceMockitoTest {
@@ -114,5 +115,61 @@ class UserServiceMockitoTest {
                 "ivan@example.com",
                 25
         );
+    }
+
+    @Test
+    void updateUser_shouldThrowException_whenUserDoesNotExist() {
+        when(userDao.update(
+                1L,
+                "Ivan",
+                "ivan@example.com",
+                25
+        )).thenReturn(false);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.updateUser(
+                        1L,
+                        "Ivan",
+                        "ivan@example.com",
+                        25
+                )
+        );
+
+        verify(userDao).update(
+                1L,
+                "Ivan",
+                "ivan@example.com",
+                25
+        );
+    }
+
+    @Test
+    void createUser_shouldCallDao_whenDataIsValid() {
+        User user = new User(
+                "Ivan",
+                "ivan@example.com",
+                25
+        );
+
+        userService.createUser(user);
+
+        verify(userDao).create(user);
+    }
+
+    @Test
+    void createUser_shouldNotCallDao_whenDataIsInvalid() {
+        User user = new User(
+                "",
+                "invalid-email",
+                -5
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.createUser(user)
+        );
+
+        verify(userDao, never()).create(user);
     }
 }
