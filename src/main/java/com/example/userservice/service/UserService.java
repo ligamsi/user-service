@@ -15,11 +15,19 @@ import org.slf4j.LoggerFactory;
 public class UserService implements AutoCloseable {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-    private final UserDao userDao = new UserDao();
+    private final UserDao userDao;
     private final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
 
     private final Validator validator =
             validatorFactory.getValidator();
+
+    public UserService() {
+        this(new UserDao());
+    }
+
+    public UserService(UserDao userDao) {
+        this.userDao = userDao;
+    }
 
     public void createUser(User user) {
         validateUserData(
